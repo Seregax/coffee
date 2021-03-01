@@ -1,19 +1,22 @@
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from release.main_ui import Ui_MainWindow
+from release.addEditCoffeeForm import Ui_EditWindow
 import sqlite3
 import sys
 
 
-class Coffee(QMainWindow):
+class Coffee(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(Coffee, self).__init__()
-        uic.loadUi('main.ui', self)
+        self.setupUi(self)
+        self.setWindowTitle('Латте макиато')
         self.refresh()
         self.pushButton.clicked.connect(self.new)
 
     def refresh(self):
-        con = sqlite3.connect('coffee.sqlite')
+        con = sqlite3.connect('data/coffee.sqlite')
         cur = con.cursor()
         result = cur.execute('''SELECT * FROM "coffee"''').fetchall()
         con.close()
@@ -40,13 +43,14 @@ class Coffee(QMainWindow):
         self.editor.show()
 
 
-class Editor(QMainWindow):
+class Editor(QMainWindow, Ui_EditWindow):
     def __init__(self, id=None):
         super(Editor, self).__init__()
-        uic.loadUi('addEditCoffeeForm.ui', self)
+        self.setupUi(self)
+        self.setWindowTitle('Измение значений')
         self.id = id
         if id:
-            con = sqlite3.connect('coffee.sqlite')
+            con = sqlite3.connect('data/coffee.sqlite')
             cur = con.cursor()
             result = cur.execute(f'''SELECT * FROM "coffee" WHERE id = {id}''').fetchall()
             self.result = result
@@ -62,7 +66,7 @@ class Editor(QMainWindow):
 
     def push(self):
         if self.id:
-            con = sqlite3.connect('coffee.sqlite')
+            con = sqlite3.connect('data/coffee.sqlite')
             cur = con.cursor()
             cur.execute(f'''UPDATE "coffee" SET name="{self.lineEdit.text()}", 
                             degree="{self.lineEdit_2.text()}", type="{self.lineEdit_3.text()}", 
@@ -71,7 +75,7 @@ class Editor(QMainWindow):
             con.commit()
             con.close()
         else:
-            con = sqlite3.connect('coffee.sqlite')
+            con = sqlite3.connect('data/coffee.sqlite')
             cur = con.cursor()
             cur.execute(f'''INSERT INTO "coffee" VALUES (NULL, "{self.lineEdit.text()}", 
                             "{self.lineEdit_2.text()}", "{self.lineEdit_3.text()}",
@@ -82,7 +86,7 @@ class Editor(QMainWindow):
         ex.refresh()
 
     def remove(self):
-        con = sqlite3.connect('coffee.sqlite')
+        con = sqlite3.connect('data/coffee.sqlite')
         cur = con.cursor()
         cur.execute(f'''DELETE FROM "coffee" WHERE id={self.result[0][0]}''')
         con.commit()
